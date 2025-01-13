@@ -66,7 +66,7 @@ def addDirectory(directory_name, current_path=""):
         storage_client = storage.Client(project=local_constants.PROJECT_NAME)
         bucket = storage_client.bucket(local_constants.PROJECT_STORAGE_BUCKET)
         
-        # Unique directory id for Firestore (temp)
+        #  directory id for Firestore (temp)
         dir_id = firestore_db.collection('directories').document().id
         blob = bucket.blob(full_path)
         blob.upload_from_string('', content_type='application/x-www-form-urlencoded;charset=UTF-8')
@@ -83,8 +83,8 @@ def addDirectory(directory_name, current_path=""):
         dir_ref.set(dir_data)
         
         return {"message": "Directory created successfully", "directory_id": dir_id, "directory_data": dir_data}
-    except Exception as e:
-        return {"error": str(e), "status": 500}
+    except:
+           return {"message": " Issue creating directory", "directory_id": dir_id, "directory_data": dir_data}
 
 async def addFile(file, full_path, overwrite=False):
     try:
@@ -138,8 +138,8 @@ async def addFile(file, full_path, overwrite=False):
             "duplicate_content": duplicate_content,
             "duplicate_files": duplicate_files
         }
-    except Exception as e:
-        return {"error": str(e), "status": 400}
+    except:
+        return {"message": "Issue uploading file"}
     
 
 
@@ -243,7 +243,7 @@ async def downloadFileHandler(request: Request):
     }
     return Response(content=file_content, media_type="application/octet-stream", headers=headers)
 
-
+#Function to upload a file to the dropbox
 @app.post("/upload-file", response_class=JSONResponse)
 async def uploadFileHandler(request: Request):
     id_token = request.cookies.get("token")
@@ -320,7 +320,7 @@ async def view_directory(request: Request, dir_name: str):
     if not dir_name.endswith('/'):
         dir_name += '/'
 
-    print("Directory being viewed:", dir_name)
+    print("current directory im in", dir_name)
 
     if "favicon.ico" in dir_name:
          return RedirectResponse('/')
@@ -329,7 +329,7 @@ async def view_directory(request: Request, dir_name: str):
     blobs, subdirectories = blobList(dir_name)
     blobs_list = list(blobs)  # Files in the current directory
 
-    # Separate the blobs into files and directories based on whether their names end with '/'
+    # Separate the blobs into files and directories based on whether their names end with /
     file_list = [blob.name for blob in blobs if not blob.name.endswith('/')]
     directory_list = [prefix for prefix in subdirectories]
 
@@ -350,11 +350,11 @@ def deleteDirectory(directory_path):
     storage_client = storage.Client(project=local_constants.PROJECT_NAME)
     bucket = storage_client.bucket(local_constants.PROJECT_STORAGE_BUCKET)
     
-    # Normalize the path to ensure it ends with a '/'
+    # make surer the path ends with /
     if not directory_path.endswith('/'):
         directory_path += '/'
     
-    # Get the Firestore document reference
+    # Get the Firestore  reference
     dirs_collection = firestore_db.collection('directories')
     dir_docs = dirs_collection.where('path', '==', directory_path).stream()
 
